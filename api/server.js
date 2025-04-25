@@ -139,6 +139,9 @@ app.get("/play/:playerid/results", catchErrors(async (req, res) => {
 
 
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.get("/api/healthz", (req, res) => {
+  res.status(200).send("OK");
+});
 
 await initDB();
 
