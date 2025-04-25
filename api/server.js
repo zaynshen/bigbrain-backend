@@ -55,35 +55,35 @@ const authed = (fn) => async (req, res) => {
 };
 
 // === Routes ===
-app.post("/admin/auth/login", catchErrors(async (req, res) => {
+app.post("/api/admin/auth/login", catchErrors(async (req, res) => {
   const { email, password } = req.body;
   const token = await login(email, password);
   return res.json({ token });
 }));
 
-app.post("/admin/auth/register", catchErrors(async (req, res) => {
+app.post("/api/admin/auth/register", catchErrors(async (req, res) => {
   const { email, password, name } = req.body;
   const token = await register(email, password, name);
   return res.json({ token });
 }));
 
-app.post("/admin/auth/logout", catchErrors(authed(async (req, res, email) => {
+app.post("/api/admin/auth/logout", catchErrors(authed(async (req, res, email) => {
   await logout(email);
   return res.json({});
 })));
 
-app.get("/admin/games", catchErrors(authed(async (req, res, email) => {
+app.get("/api/admin/games", catchErrors(authed(async (req, res, email) => {
   const games = await getGamesFromAdmin(email);
   return res.json({ games });
 })));
 
-app.put("/admin/games", catchErrors(authed(async (req, res, email) => {
+app.put("/api/admin/games", catchErrors(authed(async (req, res, email) => {
   const { games } = req.body;
   await updateGamesFromAdmin({ gamesArrayFromRequest: games, email });
   return res.status(200).send({});
 })));
 
-app.post("/admin/game/:gameid/mutate", catchErrors(authed(async (req, res, email) => {
+app.post("/api/admin/game/:gameid/mutate", catchErrors(authed(async (req, res, email) => {
   const { gameid } = req.params;
   const { mutationType } = req.body;
   await assertOwnsGame(email, gameid);
@@ -91,48 +91,48 @@ app.post("/admin/game/:gameid/mutate", catchErrors(authed(async (req, res, email
   return res.status(200).send({ data });
 })));
 
-app.get("/admin/session/:sessionid/status", catchErrors(authed(async (req, res, email) => {
+app.get("/api/admin/session/:sessionid/status", catchErrors(authed(async (req, res, email) => {
   const { sessionid } = req.params;
   await assertOwnsSession(email, sessionid);
   return res.status(200).json({ results: await sessionStatus(sessionid) });
 })));
 
-app.get("/admin/session/:sessionid/results", catchErrors(authed(async (req, res, email) => {
+app.get("/api/admin/session/:sessionid/results", catchErrors(authed(async (req, res, email) => {
   const { sessionid } = req.params;
   await assertOwnsSession(email, sessionid);
   return res.status(200).json({ results: await sessionResults(sessionid) });
 })));
 
-app.post("/play/join/:sessionid", catchErrors(async (req, res) => {
+app.post("/api/play/join/:sessionid", catchErrors(async (req, res) => {
   const { sessionid } = req.params;
   const { name } = req.body;
   const playerId = await playerJoin(name, sessionid);
   return res.status(200).send({ playerId });
 }));
 
-app.get("/play/:playerid/status", catchErrors(async (req, res) => {
+app.get("/api/play/:playerid/status", catchErrors(async (req, res) => {
   const { playerid } = req.params;
   return res.status(200).send({ started: await hasStarted(playerid) });
 }));
 
-app.get("/play/:playerid/question", catchErrors(async (req, res) => {
+app.get("/api/play/:playerid/question", catchErrors(async (req, res) => {
   const { playerid } = req.params;
   return res.status(200).send({ question: await getQuestion(playerid) });
 }));
 
-app.get("/play/:playerid/answer", catchErrors(async (req, res) => {
+app.get("/api/play/:playerid/answer", catchErrors(async (req, res) => {
   const { playerid } = req.params;
   return res.status(200).send({ answers: await getAnswers(playerid) });
 }));
 
-app.put("/play/:playerid/answer", catchErrors(async (req, res) => {
+app.put("/api/play/:playerid/answer", catchErrors(async (req, res) => {
   const { playerid } = req.params;
   const { answers } = req.body;
   await submitAnswers(playerid, answers);
   return res.status(200).send({});
 }));
 
-app.get("/play/:playerid/results", catchErrors(async (req, res) => {
+app.get("/api/play/:playerid/results", catchErrors(async (req, res) => {
   const { playerid } = req.params;
   return res.status(200).send(await getResults(playerid));
 }));
