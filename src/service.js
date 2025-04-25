@@ -2,7 +2,6 @@ import AsyncLock from "async-lock";
 import jwt from "jsonwebtoken";
 import { AccessError, InputError } from "./error";
 import { Redis } from "@upstash/redis";
-import { initDB } from "../src/service.js";
 const lock = new AsyncLock();
 
 const DB_KEY = "bigbrain-db";
