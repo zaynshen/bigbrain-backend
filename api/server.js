@@ -26,7 +26,7 @@ import {
   sessionStatus,
   submitAnswers,
   updateGamesFromAdmin,
-} from "../backend/src/service.js";
+} from "../src/service.js";
 
 const app = express();
 

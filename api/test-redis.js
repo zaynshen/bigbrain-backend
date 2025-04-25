@@ -1,3 +1,5 @@
+// api/test-redis.js
+
 import { Redis } from "@upstash/redis";
 
 const redis = new Redis({
@@ -6,8 +8,13 @@ const redis = new Redis({
 });
 
 export default async function handler(req, res) {
-  await redis.set("vercel_test", "hello redis!");
-  const value = await redis.get("vercel_test");
+  try {
+    await redis.set("vercel_test", "hello redis!");
+    const value = await redis.get("vercel_test");
 
-  res.status(200).json({ message: "Redis working!", value });
+    res.status(200).json({ message: "Redis working!", value });
+  } catch (err) {
+    console.error("Redis Error:", err);
+    res.status(500).json({ error: "Redis failed", detail: err.message });
+  }
 }
