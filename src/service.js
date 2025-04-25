@@ -1,6 +1,6 @@
 import AsyncLock from "async-lock";
 import jwt from "jsonwebtoken";
-import { AccessError, InputError } from "..src/error.js";
+import { AccessError, InputError } from "../src/error.js";
 import { Redis } from "@upstash/redis";
 const lock = new AsyncLock();
 
