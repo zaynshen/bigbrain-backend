@@ -2,7 +2,8 @@ import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 import swaggerUi from "swagger-ui-express";
-import swaggerDocument from "../swagger.json";
+import swaggerDocument from "../swagger.json" assert { type: "json" };
+import data from "./file.json" assert { type: "json" };
 
 import { AccessError, InputError } from "../src/error.js";
 import {
