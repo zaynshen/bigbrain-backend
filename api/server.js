@@ -6,7 +6,7 @@ import fs from "fs";
 import swaggerUi from "swagger-ui-express";
 
 import swaggerDocument from "../swagger.json";
-import { AccessError, InputError } from "../backend/src/error.js";
+import { AccessError, InputError } from "../src/error.js";
 import {
   assertOwnsGame,
   assertOwnsSession,
