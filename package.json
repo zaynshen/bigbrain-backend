@@ -2,6 +2,7 @@
   "name": "express-backend",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "main": "api/server.js",
   "scripts": {
     "dev": "nodemon api/server.js",
