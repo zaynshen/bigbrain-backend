@@ -27,7 +27,7 @@ import {
   submitAnswers,
   updateGamesFromAdmin,
 } from "../src/service.js";
-
+await initDB();
 const app = express();
 
 app.use(cors());
