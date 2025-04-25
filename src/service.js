@@ -1,12 +1,17 @@
 import AsyncLock from "async-lock";
-import fs from "fs";
 import jwt from "jsonwebtoken";
 import { AccessError, InputError } from "./error";
-
+import { Redis } from "@upstash/redis";
+import { initDB } from "../src/service.js";
 const lock = new AsyncLock();
 
+const DB_KEY = "bigbrain-db";
+
 const JWT_SECRET = "llamallamaduck";
-const DATABASE_FILE = "./database.json";
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN,
+});
 
 /***************************************************************
                       State Management
@@ -17,47 +22,44 @@ let games = {};
 let sessions = {};
 
 const sessionTimeouts = {};
-
 const update = (admins, games, sessions) =>
   new Promise((resolve, reject) => {
-    lock.acquire("saveData", () => {
+    lock.acquire("saveData", async () => {
       try {
-        fs.writeFileSync(
-          DATABASE_FILE,
-          JSON.stringify(
-            {
-              admins,
-              games,
-              sessions,
-            },
-            null,
-            2
-          )
+        await redis.set(
+          DB_KEY,
+          JSON.stringify({ admins, games, sessions }, null, 2)
         );
         resolve();
-      } catch {
-        reject(new Error("Writing to database failed"));
+      } catch (err) {
+        reject(new Error("Writing to database failed: " + err.message));
       }
     });
   });
 
 export const save = () => update(admins, games, sessions);
-export const reset = () => {
-  update({}, {}, {});
+export const initDB = async () => {
+  try {
+    const data = await redis.get(DB_KEY);
+    if (data) {
+      admins = data.admins || {};
+      games = data.games || {};
+      sessions = data.sessions || {};
+      console.log("🔁 Loaded DB from Redis.");
+    } else {
+      console.log("⚠️ No database found, creating a new one...");
+      await save();
+    }
+  } catch (err) {
+    console.error("❌ Failed to load DB from Redis:", err.message);
+  }
+};
+export const reset = async () => {
   admins = {};
   games = {};
   sessions = {};
+  return await save();
 };
-
-try {
-  const data = JSON.parse(fs.readFileSync(DATABASE_FILE));
-  admins = data.admins;
-  games = data.games;
-  sessions = data.sessions;
-} catch {
-  console.log("WARNING: No database found, create a new one");
-  save();
-}
 
 /***************************************************************
                       Helper Functions
@@ -201,7 +203,10 @@ export const updateGamesFromAdmin = ({ gamesArrayFromRequest, email }) =>
       // Convert array to object format and update
       const newGames = {};
       gamesArrayFromRequest.forEach((gameFromRequest) => {
-        const gameIdFromRequest = gameFromRequest.id || gameFromRequest.gameId || gameFromRequest.gameID;
+        const gameIdFromRequest =
+          gameFromRequest.id ||
+          gameFromRequest.gameId ||
+          gameFromRequest.gameID;
         // If game has an ID and it exists in admin's games, use that ID
         // Otherwise generate a new ID
         const gameId =
